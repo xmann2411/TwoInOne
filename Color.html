@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Knockout quiz</title>
+    <script src="https://code.jquery.com/jquery-3.6.3.js"
+            integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
+            crossorigin="anonymous"></script>
+    <link href="style.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.js"
+            integrity="sha512-2AL/VEauKkZqQU9BHgnv48OhXcJPx9vdzxN1JrKDVc4FPU/MEE/BZ6d9l0mP7VmvLsjtYwqiYQpDskK9dG8KBA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="main.js"></script>
+
+    <script>
+
+        function getRandomNumberRange(min, max) {
+            //7 - 15
+            //razlika je 8
+            var diff = max - min;
+            var perc = diff * Math.random();
+            return min + perc;
+
+        }
+
+        function getRandomNumber() {
+            a = 255 * Math.random();
+            return Math.round(a);
+        }
+
+        function getHeximal() {
+            let h = getRandomNumber();
+
+            return h.toString(16).padStart(2, '0');
+        }
+
+        function getRandomColor() {
+
+            return '#' + getHeximal() + getHeximal() + getHeximal();
+
+            let r = getRandomNumber();
+            let g = getRandomNumber();
+            let b = getRandomNumber();
+
+            let rh = r.toString(16);
+            let gh = g.toString(16);
+            let bh = b.toString(16);
+
+             //a.toString(16) - hexadecimalni
+
+            var red = rh;
+            var green = gh;
+            var blue = bh;
+
+            return '#' + red + ',' + green + ',' + blue;
+        }
+
+        Array.prototype.shuffle = function () {
+            return this.map(val => { return { weight: Math.random(), value: val } })
+                .sort((a, b) => a.weight - b.weight)
+                .map(item => item.value);
+        };
+
+        //console.log(getRandomColor());
+
+        $(document).ready(function () {
+
+            function viewModel() {
+                var self = this;
+
+                self.text = ko.observable('Odgovor točan');
+               
+                self.correctColor = ko.observable();
+                self.arrayBoja = ko.observableArray();
+                self.numberOfClicks = ko.observable(0);
+
+
+                self.solvedCards = ko.observableArray([]);//Korisnik je pogodio parove
+                self.chosenCards = ko.observableArray([]);//Korisnk privremeno odabrao
+                //self.closedCardColor = ko.observable('#E0E0E0');
+
+
+                //1. mapiram u objekt { weight: Math.random(), boja:  }
+                //2. sort po weight
+                //3. mapiraj samo u boje
+
+                self.reset = () => {
+
+                    //var arr = [
+                    //    getRandomColor(), getRandomColor(),
+                    //    getRandomColor(), getRandomColor(),
+                    //    getRandomColor(), getRandomColor(),
+                    //    getRandomColor(), getRandomColor()];
+                    var arr = [
+                        "#89CFF0", "#C1E1C1",
+                        "#FAC898", "#E37383",
+                        "#C3B1E1", "#F3E5AB",
+                        "#967969", "#F8C8DC"];
+
+                    var broj = 1;
+                    arr = arr.map(boja => { return { broj: broj++, boja: boja, isOtvoren: false } })
+
+                    var arr2 = [...arr, ...arr.map((item) => { return { broj: item.broj, boja: item.boja, isOtvoren: false }; })];
+
+                    self.arrayBoja(arr2.shuffle());
+                    //self.shuffleArray(this.arrayBoja().shuffle());
+                };
+
+                self.reset();
+
+                //self.provjeri = (chosenCards) => {
+                //    if (this.chosenCards[i] == this.chosenCards[]
+                //}
+
+                self.isVisible = function (card) {
+                    return self.chosenCards().indexOf($data) > - 1 || self.solvedCards().indexOf($data) > - 1;
+                };
+
+                self.chooseCard = function (card) {
+                    if (self.chosenCards().length < 2) {
+                        //if (card.isOtvoren) {
+                        //    return;
+                        //}
+                        if (self.chosenCards().indexOf(card) > -1) {
+                            return;
+                        }
+                        self.chosenCards.push(card);
+                        card.isOtvoren = true;
+                        if (self.chosenCards().length == 2) {
+                            //provjeri
+                            if (self.chosenCards()[0].boja == self.chosenCards()[1].boja) {
+                                self.solvedCards.push(self.chosenCards()[0]);
+                                self.solvedCards.push(self.chosenCards()[1]);
+                                self.chosenCards.removeAll();
+
+                                if (self.solvedCards().length == 16) {
+                                    setTimeout(() => {
+                                        alert('GAME OVER');
+                                    }, 100)
+
+                                    //isprazni polja
+                                    self.chosenCards().removeAll;
+                                    self.solvedCards().removeAll;
+                                    //sve karte stavi da isOtvoren je false
+                                    self.arrayBoja().forEach(card.isOtvoren = false);
+                                }
+                            }
+                            else {
+                                setTimeout(() => {
+                                    self.chosenCards().forEach((item) => {
+                                        item.isOtvoren = false;
+                                    })
+                                    self.chosenCards.removeAll();
+                                }, 1000)
+                            }
+                            var previousCount = self.numberOfClicks();
+                            self.numberOfClicks(previousCount + 1);
+                        }
+                    }
+                    
+                };
+
+                self.odaberi = (boja) => {
+                    if (boja == self.correctColor()) {
+                        alert('Točno');
+                        self.reset();
+                    }
+                    else alert('Netočno');
+                };
+
+                self.hello = function () {
+                    alert('Hello');
+                };
+
+                //timer
+                //self.minutesLabel = ko.observable('minutes')
+                //self.secondsLabel = ko.observable('seconds');
+                //self.totalSeconds = ko.observable(0);
+
+                var minutesLabel = document.getElementById("minutes");
+                var secondsLabel = document.getElementById("seconds");
+                var totalSeconds = 0;
+                setInterval(setTime, 1000);
+
+                function setTime() {
+                    ++totalSeconds;
+                    secondsLabel.innerHTML = pad(totalSeconds % 60);
+                    minutesLabel.innerHTML = pad(parseInt(totalSeconds / 60));
+                }
+
+                function pad(val) {
+                    var valString = val + "";
+                    if (valString.length < 2) {
+                        return "0" + valString;
+                    } else {
+                        return valString;
+                    }
+                }
+
+            }
+
+            ko.applyBindings(new viewModel());
+        });
+
+
+
+    </script>
+
+</head>
+<body>
+    <h1>Memory game</h1>
+    <h2>
+        <span>Moves:</span>
+        <span data-bind="text: numberOfClicks"> </span>  
+    </h2>
+    <h3>Time: <label id="minutes">00</label>:<label id="seconds">00</label></h3>
+    
+
+    <!--kocka-->
+    <div class="container" data-bind="foreach: arrayBoja">
+        <!-- ko if: $root.chosenCards().indexOf($data) > - 1 || $root.solvedCards().indexOf($data) > - 1 -->
+        <div class="kocka" data-bind="click: function() { $root.chooseCard($data) }, style: {background: boja}, text: broj"></div>
+        <!-- /ko -->
+        <!-- ko ifnot: $root.chosenCards().indexOf($data) > - 1 || $root.solvedCards().indexOf($data) > - 1 -->
+        <div class="kocka" data-bind="click: $root.chooseCard" style="background: #E0E0E0">?</div>
+        <!-- /ko -->
+    </div>
+
+</body>
+</html>

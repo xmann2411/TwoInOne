@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Knockout quiz</title>
+    <script src="https://code.jquery.com/jquery-3.6.3.js"
+            integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
+            crossorigin="anonymous"></script>
+    <link href="style.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.js"
+            integrity="sha512-2AL/VEauKkZqQU9BHgnv48OhXcJPx9vdzxN1JrKDVc4FPU/MEE/BZ6d9l0mP7VmvLsjtYwqiYQpDskK9dG8KBA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="main.js"></script>
+
+    <script>
+
+        function getRandomNumberRange(min, max) {
+            //7 - 15
+            //razlika je 8
+            var diff = max - min;
+            var perc = diff * Math.random();
+            return min + perc;
+
+        }
+
+
+        function getRandomNumber() {
+            a = 255 * Math.random();
+            return Math.round(a);
+        }
+
+        function getHeximal() {
+            let h = getRandomNumber();
+
+            return h.toString(16).padStart(2, '0');
+        }
+
+        function getRandomColor() {
+
+            return '#' + getHeximal() + getHeximal() + getHeximal();
+
+            let r = getRandomNumber();
+            let g = getRandomNumber();
+            let b = getRandomNumber();
+
+            let rh = r.toString(16);
+            let gh = g.toString(16);
+            let bh = b.toString(16);
+
+             //a.toString(16) - hexadecimalni
+
+            var red = rh;
+            var green = gh;
+            var blue = bh;
+
+            return '#' + red + ',' + green + ',' + blue;
+            //return '#' + red + green + blue;
+        }
+
+        console.log(getRandomColor());
+
+        $(document).ready(function () {
+
+            function viewModel() {
+                var self = this;
+                self.title = ko.observable('cool DRVO');
+                self.nodes = ko.observableArray(nodes);
+
+                /*showMore*/
+
+                //$parent.text -> name
+
+
+            }
+
+            ko.applyBindings(new viewModel());
+        });
+    </script>
+
+</head>
+<body>
+    <h1 data-bind="text: title"></h1>
+
+    <script type="text/html" id="node-template">
+        <li>
+            <label>
+                <input type="checkbox" data-bind="checked: expanded ">
+
+                <!-- ko if: canExpand -->
+                <img src="Plus.png" style="width: 16px;" />
+                <!--/ko-->
+                <!-- ko ifnot: canExpand-->
+                <img src="Empty.png" style="width: 16px;" />
+                <!--/ko-->
+            </label>
+            <span data-bind="text: text "></span>
+
+            <ul data-bind="foreach: children, visible: expanded">
+                <!--ko template: { name:'node-template' }-->
+                <!--/ko-->
+            </ul>
+        </li>
+    </script>
+
+
+    <ul data-bind="foreach: nodes">
+        <!-- ko template: { name:'node-template', data: $data } -->
+        <!-- /ko -->
+    </ul>
+
+
+
+
+</body>
+</html>
